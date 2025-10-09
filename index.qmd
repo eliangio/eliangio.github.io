@@ -1,7 +1,17 @@
 ---
-title: "mainpage"
+title: "Home"
 ---
+![](profile.jpg)
+## Elian Giordano
+Last Update: 9 Oct 2025
 
-This is a Quarto website.
+# Current Positions
+Data Replicator, Journal of Political Economy
+Adjunct Lecturer, Universidad Autónoma de Barcelona
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+# Research Interests
+Impact Evaluation, Inequality Measurement, Social Mobility
+
+# Contact
+eliangiordano7[at]gmail[dot]com
+[Linkedin](www.linkedin.com/in/elian-giordano)
