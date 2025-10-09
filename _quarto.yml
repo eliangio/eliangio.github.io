@@ -1,13 +1,17 @@
 project:
   type: website
+  output-dir: docs
 
 website:
-  title: "mainpage"
+  title: "Elian Giordano"
   navbar:
     left:
       - href: index.qmd
         text: Home
       - about.qmd
+      - courses.qmd
+      - projects.qmd
+      - code.qmd
 
 format:
   html:

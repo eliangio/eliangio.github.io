@@ -1,17 +1,28 @@
 ---
-title: "Home"
+title: "Elian Giordano"
+css: styles.css
 ---
-![](profile.jpg)
-## Elian Giordano
+
 Last Update: 9 Oct 2025
 
-# Current Positions
-Data Replicator, Journal of Political Economy
-Adjunct Lecturer, Universidad Autónoma de Barcelona
+::: {.columns}
 
-# Research Interests
+::: {.column width="40%"}
+![](profile.jpg){width="80%"}
+:::
+
+::: {.column width="60%" .v-top}
+
+### Current Positions
+Data Replicator, *Journal of Political Economy*  
+Adjunct Lecturer, *Universidad Autónoma de Barcelona*
+
+### Research Interests
 Impact Evaluation, Inequality Measurement, Social Mobility
 
-# Contact
-eliangiordano7[at]gmail[dot]com
+### Contact
+eliangiordano7[at]gmail[dot]com  
 [Linkedin](www.linkedin.com/in/elian-giordano)
+:::
+
+:::

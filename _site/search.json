@@ -2,8 +2,15 @@
   {
     "objectID": "index.html",
     "href": "index.html",
+    "title": "Elian Giordano",
+    "section": "",
+    "text": "Last Update: 9 Oct 2025\n\n\n\n\n\nCurrent Positions\nData Replicator, Journal of Political Economy\nAdjunct Lecturer, Universidad Autónoma de Barcelona\n\n\nResearch Interests\nImpact Evaluation, Inequality Measurement, Social Mobility\n\n\nContact\neliangiordano7[at]gmail[dot]com\nLinkedin"
+  },
+  {
+    "objectID": "index.html#elian-giordano",
+    "href": "index.html#elian-giordano",
     "title": "Home",
     "section": "",
-    "text": "## Elian Giordano Last Update: 9 Oct 2025\n\nCurrent Positions\nData Replicator, Journal of Political Economy Adjunct Lecturer, Universidad Autónoma de Barcelona\n\n\nResearch Interests\nImpact Evaluation, Inequality Measurement, Social Mobility\n\n\nContact\neliangiordano7[at]gmail[dot]com Linkedin"
+    "text": "Last Update: 9 Oct 2025\n\n\n\n\n\n\nData Replicator, Journal of Political Economy Adjunct Lecturer, Universidad Autónoma de Barcelona\n\n\n\nImpact Evaluation, Inequality Measurement, Social Mobility\n\n\n\neliangiordano7[at]gmail[dot]com Linkedin\n\n\n\n\n\nYou asked two things about resizing:\n\nResizing the Container: In the code above, the column holding the image is set to width=\"30%\". This means the container is \\(30\\%\\) of the page width.\nResizing the Image: Inside the column, I added the image attribute {width=\"100%\"}. This tells the image to fill \\(100\\%\\) of its \\(30\\%\\) container. If you want the image to be smaller, you can change this to, for example, {width=\"75%\"}.\n\n\n\n\nBy default, the text content might start at the top of its column, while the image naturally sits higher. To make the text content line up more nicely (vertically centered) with the image’s container, you can add a small custom CSS class.\n1. Update index.qmd:\nAdd the class v-center to the right column:\n```markdown … ::: {.column width=“70%” .v-center} …"
   }
 ]

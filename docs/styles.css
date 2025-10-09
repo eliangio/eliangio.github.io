@@ -1,0 +1,13 @@
+/* css styles */
+.v-top {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+}
+
+/* New rule to remove top margin/padding from the first heading in the right column */
+.v-top :first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
