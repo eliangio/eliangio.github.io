@@ -1,5 +1,54 @@
 ---
-title: "Courses"
---- 
+title: "Teaching"
+---
 
-Welcome to my courses webpage. You will find here a list of ongoing or past courses with their related materials 
+Welcome to my teaching webpage. You will find here a list of ongoing or past courses with their related materials.
+
+![](files/teaching.jpg){fig-align="center" width="100%"}
+
+::: {.callout-note icon=false}
+## Contact
+**Universitat Autònoma de Barcelona** (Sabadell Campus)  
+**Office:** 225, 2nd Floor  
+**Email:** 1802745[at]uab.cat
+:::
+
+## Microeconomía
+**Code:** 102119 | **Group:** 10 | **Degree:** ADE i Dret  
+[View Syllabus](https://drive.google.com/file/d/1T7yLUzIYT42k2qDVuKUtxrMvkdbcfzbC/view?usp=sharing){target="_blank"}
+
+I teach this course at the UAB Sabadell campus. Below you can find the complete set of exercises with solutions that I prepared for the students.
+
+### Exercise Sets with Solutions
+* [Set 1: Preferences and Utility](https://drive.google.com/file/d/1apHGl5v-hS8Id-gNDSxz5SBPrsI0bY43/view?usp=sharing)
+* [Set 2: Budget Constraint](https://drive.google.com/file/d/1WI2qJm2pMEgSVVQokqo7TDe27py_kzIq/view?usp=sharing)
+* [Set 3: Consumer Optimal Choice](https://drive.google.com/file/d/1S8C2VSECL9Qfv6KIbsan9sjdvVSVR0-e/view?usp=sharing)
+* [Set 4: Consumer Demand](https://drive.google.com/file/d/1B8sBRoAhDsxDsmpeSnDcHulN7ZEN0QnW/view?usp=sharing)
+* [Set 5: Technology](https://drive.google.com/file/d/1YzJ3Nt7Ul6VsQ3_45WJ3o7YEARLEPqpp/view?usp=sharing)
+* [Set 6: Profit Maximization](https://drive.google.com/file/d/1LkcPcOLyMfh5J9XLHWOlj5FNHtmmsZeY/view?usp=sharing)
+* [Set 7: Cost Minimization and Cost Function](https://drive.google.com/file/d/1MReMWhkrt0QrXzvREm3Hy6ubRiHrsk6e/view?usp=sharing)
+* [Set 8: Short-Run and Long-Run Optimization](https://drive.google.com/file/d/1tcnxc8tNXftvXRmp0tUgPhkP0HC_Na7Q/view?usp=sharing)
+* [Set 9: Market Equilibrium, Efficiency, and Tax Incidence](https://drive.google.com/file/d/15cjA4c2hzAJfCrMjK0td5-LLKj2T-Jrg/view?usp=sharing)
+* [Set 10: Monopoly and Efficiency](https://drive.google.com/file/d/1vxDginb1ur4DX0Bk30iW1uXQjSKittp7/view?usp=sharing)
+* [Set 11: Monopoly and Price Discrimination](https://drive.google.com/file/d/1QMU--_dM3yX3ci6wWCHVxKg2FHKxGDQ_/view?usp=sharing)
+* [Set 12: Oligopoly: Cournot and Bertrand](https://drive.google.com/file/d/1CdIVAUJiemmAuo3z1cyVMGvMpCRpbJ-e/view?usp=sharing)
+* [Set 13: Oligopoly: General Equilibrium](https://drive.google.com/file/d/1EGXi2jfeCE1qSYzBxbArw6Fqi5KNInES/view?usp=sharing)
+
+---
+
+## Econometrics I
+**Code:** 102308 | **Group:** 60 | **Degree:** CiF    
+[View Syllabus](https://drive.google.com/file/d/122MEwX_N39QVv_OWsYeKTC6iRvcUKuq7/view?usp=sharing){target="_blank"}
+
+I took over instruction for the second half of this course. My section covers Topics 4, 5, and 6, focusing on practical implementation using R.
+
+### Lecture Slides
+* [Topic 4: The multiple regression model: estimation](https://drive.google.com/file/d/1O8mSI0no1vPe-WOUgFUM2o12QgJ2WIl1/view?usp=sharing)
+* [Topic 5: Linear regression analysis: inference](https://drive.google.com/file/d/1KVE8xNQVvMyRPY90Ioph-3mi8yZ576Kr/view?usp=sharing)
+* [Topic 6: Linear regression analysis: extensions](https://drive.google.com/file/d/1X54vtnvahTmu1tDv5mTz3O_xYgjZQ9gH/view?usp=sharing)
+
+### R Lab Sessions with Solutions
+These solutions were generated using Quarto.
+
+* **Exercise Set 4:** [View Solution 4](files/Ejercicios4Quarto.qmd)
+* **Exercise Set 5:** [View Solution 5](files/Ejercicios5Quarto.qmd)

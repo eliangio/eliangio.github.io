@@ -6,21 +6,25 @@ website:
   title: "Elian Giordano"
   navbar:
     left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
-      - CV.qmd
+      - text: "About"        # <--- Explicitly naming the button "About"
+        href: about.qmd
+      - text: "CV"           # <--- Good practice to do this for CV too
+        href: CV.qmd
       - courses.qmd
       - projects.qmd
       - code.qmd
+    right:
+      - icon: github
+        href: https://github.com/eliangio
+        target: _blank
+      - icon: linkedin
+        href: https://www.linkedin.com/in/elian-giordano
+        target: _blank
 
 format:
   html:
     theme:
-      - cosmo
-      - brand
+      light: cosmo
+      dark: darkly
     css: styles.css
     toc: true
-
-
-

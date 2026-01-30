@@ -1,0 +1,760 @@
+---
+title: "Ejercicios4Quarto"
+author: "Elian Giordano"
+format: html
+editor: visual
+execute:
+  eval: false
+---
+
+# Ejercicios 4
+
+Si queremos que R ponga en automático la ubicación adonde estamos trabajando
+
+```{r}
+#| message: false
+#| warning: false
+#| include: false
+#| paged-print: false
+directorio_actual <- getwd()
+nueva_ruta <- file.path(directorio_actual)
+
+#set working directory
+setwd(nueva_ruta)
+rm(nueva_ruta)
+```
+
+Si no, la podemos poner manualmente con este comando:
+
+```{r}
+#| eval: false
+#| message: false
+#| warning: false
+#| include: false
+#| paged-print: false
+setwd("miruta") # <--- en las comillas pones la ubicación de la carpeta con los archivos
+```
+
+Primero debemos instalar los paquetes requeridos. Este paso se realiza una única vez. Posteriormente, en cada nueva sesión de trabajo, debemos cargar dichos paquetes utilizando la función `library()`
+
+```{r}
+#| eval: false
+#| message: false
+#| warning: false
+#| include: false
+#| paged-print: false
+install.packages("readr", "stargazer", "ggplot2", "car")
+```
+
+```{r}
+#| eval: false
+#| message: false
+#| warning: false
+#| include: false
+#| paged-print: false
+library(readr)
+library(stargazer)
+```
+
+## Ejercicio 1
+
+Importamos el dataset
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+muestra4 <- read_csv("muestra4.csv")
+```
+
+### 1.a) Estimación parametros
+
+Cálculo matricial $(X'X)^{-1} * X'Y$
+
+```{r}
+Y <- as.matrix(muestra4$y) # Y vector (N x 1)
+X <- as.matrix(cbind(1, muestra4$x1, muestra4$x2)) # X matriz: [Intercepta=1, x1, x2] (N x K)
+beta_hat <- solve(t(X) %*% X) %*% t(X) %*% Y # Aplicamos directamente la fórmula: beta_hat = (X'X)^-1 * X'y
+print(beta_hat)
+```
+
+Comprobamos con el cálculo automatizado
+
+```{r}
+modelo1a <- lm(y ~ x1 + x2, data=muestra4) # en la RLM ponemos "+" y el nombre de la nueva variable
+print(modelo1a) # Coeficientes
+summary(modelo1a) # Coeficientes, SE, t-stat, R^2, etc.
+
+```
+
+### 1.b) Estimación errores estándard
+
+Establecemos los parámetros del modelo ($n$, $K$)
+
+```{r}
+n <- nrow(muestra4) # número observaciones       
+K <- ncol(X) # número parámetros (incluyendo intercepta) 
+gl_model <- n - K # grados de libertad (gl)
+```
+
+Cálculo de Residuos, SCR y Varianza del Error
+
+```{r}
+Y_hat <- X %*% beta_hat 
+U_hat <- Y - Y_hat
+SCR <- t(U_hat) %*% U_hat # Suma de Cuadrados de los Residuos
+sigma2_hat <- SCR / gl_model # Estimador insesgado de la varianza del error
+
+```
+
+Cálculo de la Matriz de Varianza-Covarianza y Errores Estándar
+
+```{r}
+Var_beta_hat <- as.numeric(sigma2_hat) * solve(t(X) %*% X) # Var_beta_hat = sigma2_hat * (X'X)^-1
+print(Var_beta_hat) # Las varianzas (Var(beta_j)) están en la diagonal. Las demás son covarianzas.
+se_beta_hat <- sqrt(diag(Var_beta_hat))
+print(se_beta_hat)
+```
+
+Comprobamos con el cálculo automatizado
+
+```{r}
+summary(modelo1a)$coefficients[, "Std. Error"] #columna 
+```
+
+### 1.c) Visualización académica de los resultados con `stargazer`
+
+De manera sencilla y rápida
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+stargazer(modelo1a, type = "text")
+```
+
+Con título, nombre variables y estrellas personalizadas
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+stargazer(modelo1a, type = "text", 
+          title = "Modelo de Regresión Múltiple: y en función de x1 y x2",
+          dep.var.labels = "y",
+          covariate.labels = c("x1", "x2", "Intercept"),
+          star.cutoffs = c(0.1, 0.05, 0.01))
+```
+
+### 1.d) Descomposición de la Varianza de $\beta_1$
+
+```{r}
+inv_XtX <- solve(t(X) %*% X) # Matriz X'X
+inv_XtX_22 <- inv_XtX[2, 2] # El elemento para beta_1 (segundo parámetro) es la posición [2, 2]
+print(inv_XtX_22)
+x1_vector <- as.matrix(muestra4$x1) # vector de sólo x1
+x1_mean <- mean(x1_vector) # Cálculo de SQT_1
+SQT_1 <- t(x1_vector - x1_mean) %*% (x1_vector - x1_mean) # SQT_1 = Suma de (x1 - mean(x1))^2
+print(SQT_1)
+```
+
+Para encontrar $R^2_1$ tenemos que estimar un MCO de $x_1$ sobre los otros regresores. Modelo auxiliar: $$x_1 = \delta_0 + \delta_2*x_2 + v$$
+
+```{r}
+model_aux <- lm(x1 ~ x2, data = muestra4) # Modelo Auxiliar
+R_squared_1 <- summary(model_aux)$r.squared
+print(R_squared_1)
+
+```
+
+Para encontrar la descomposición de la varianza aplicamos la fórmula $$\frac{1}{SQT_1} * \frac{1}{(1 - R_1^2)}$$
+
+```{r}
+decomposicion_var_b1 <- (1 / as.numeric(SQT_1)) * (1 / (1 - R_squared_1)) #(1 / SQT_1) * (1 / (1 - R_1^2))
+print(decomposicion_var_b1)
+```
+
+Comprobamos con la varianza que se encontraba en la matriz de la varianza
+
+```{r}
+print(inv_XtX[2, 2]) #comprobamos
+```
+
+## Ejercicio 2
+
+### 2.a) Colinearidad perfecta
+
+La matriz de regresores $X$ tiene la forma: $X = [1, x_1, 2*x_1]$ La tercera columna (col_2) es una función lineal exacta de la segunda (col_2 = 2 \* col_1). Las columnas de $X$ no son linealmente independientes. A causa de esta dependencia, la matriz ($X'X$) se vuelve "singular", lo que significa que su determinante es $0$. Una matriz singular (con determinante $0$) NO tiene inversa. Dado que la fórmula requiere calcular $(X'X)^{-1}$, y esta inversa no existe, es matemáticamente imposible calcular las estimaciones.
+
+```{r}
+#| label: Creación parametros 
+#| message: false
+#| warning: false
+#| paged-print: false
+rm()
+n <- 50             # Número de observaciones
+beta0 <- 2
+beta1 <- 1.5
+beta2 <- 2.0
+sigma_u <- 5        # Desviación estándar del error
+
+set.seed(42) # Para reproducibilidad
+```
+
+```{r}
+#| label: Generación de regresores perfectamentes colineares
+#| message: false
+#| warning: false
+#| paged-print: false
+x1 <- runif(n, min = 10, max = 20)
+x2 <- 2 * x1 #x2 es una función de x1
+
+u <- rnorm(n, mean = 0, sd = sigma_u) 
+y <- beta0 + beta1 * x1 + beta2 * x2 + u #calculado como valor predicho y con los parametros establecidos arriba
+
+# Bases de datos
+datos <- data.frame(y, x1, x2)
+```
+
+Estimamos la correlación
+
+```{r}
+corr1 <- cor(datos$x1, datos$x2)
+print(corr1)
+```
+
+La correlación es $1.0$, lo que confirma colinearidad perfecta
+
+R es inteligente y detecta la colinearidad perfecta. Para evitar el fallo en $(X'X)^{-1}$, elimina automáticamente una de las variables
+
+```{r}
+modelo_colineal <- lm(y ~ x1 + x2, data = datos)
+summary(modelo_colineal)
+```
+
+### 2.b) Varianza infinita
+
+$R_1^2$ es el R-cuadrado de la regresión auxiliar de $x_1$ sobre $x_2$. $R_2^2$ es el R-cuadrado de la regresión auxiliar de $x_2$ sobre $x_1$.
+
+Dada la condición $x_2 = 2 * x_1$, $x_1$ explica el $100\%$ de la variabilidad de $x_2$ (y viceversa). Por lo tanto, si hiciéramos la regresión auxiliar de $x_2$ sobre $x_1$, obtendríamos un ajuste perfecto.
+
+Esto implica que $R_1^2 = 1$ y $R_2^2 = 1$.
+
+Al sustituir este valor en las fórmulas de la varianza: $$var(\beta_1) = \frac{\sigma_1}{(1 - 1)} = \frac{\sigma_1}{0}$$ $$var(\beta_2) = \frac{\sigma_2}{(1 - 1)} = \frac{\sigma_2}{0}$$
+
+La división por cero es indefinida Una varianza infinita implica una precisión nula. Los errores estándar serían infinitos, haciendo imposible distinguir los valores de $\beta_1$ y $\beta_2$ de cero o de cualquier otro valor.
+
+```{r}
+#| label: Cálculo del $R^2$ de la Regresión Auxiliar (de $x_1$ sobre $x_2$)
+#| message: false
+#| warning: false
+#| paged-print: false
+model_aux_x1 <- lm(x1 ~ x2, data = datos)
+print(model_aux_x1) #resultados
+R_squared_1 <- summary(model_aux_x1)$r.squared
+
+```
+
+```{r}
+#| label: Cálculo del Factor de Inflación de la Varianza (FIV)
+#| message: false
+#| warning: false
+#| paged-print: false
+FIV_x1 <- 1 / (1 - R_squared_1)
+print(FIV_x1)
+
+```
+
+Debido a errores de punto flotante, $R^2_1$ puede ser ligeramente menor que $1$, pero la intención es demostrar la división por cero.
+
+Si $R^2_1$ fuera exactamente $1$, el denominador sería $0$, y el $FIV$ sería infinito. Cuando $R^2_1$ es $1.0$, R devuelve 'Inf'. Por ejemplo, si lo forzamos a 1: $1 / (1 - 1)$ Esto resulta en Inf
+
+La varianza $Var(\beta_1|X)$ es proporcional al $FIV$. Como $R^2_1$ es $1$, el $FIV$ tiende a infinito. Por lo tanto, la varianza de los estimadores $Var(\beta_1|X$ y $Var(\beta_2|X)$ es infinita, confirmando que la información de la muestra no permite estimar los efectos individuales.
+
+## Ejercicio 3
+
+### 3.a) Muestra simulada 1
+
+```{r}
+#| label: Creación parámetros (mgd1)
+#| message: false
+#| warning: false
+#| paged-print: false
+set.seed(1010)
+n <- 100           # Número de observaciones
+beta0 <- 2         # Verdadero intercepto
+beta1 <- 1.5       # Verdadero efecto de x1
+beta2 <- 2.0       # Verdadero efecto de x2
+sigma_u <- 3       # Desviación estándar del error siendo que la varianza es 9
+
+
+x1 <- runif(n, min = 0, max = 100) 
+x2 <- runif(n, min = 0, max = 100) 
+u <- rnorm(n, mean = 0, sd = sigma_u) 
+y <- beta0 + beta1 * x1 + beta2 * x2 + u 
+simulacion1a <- data.frame(y, x1, x2)
+
+```
+
+### 3.b) Estimación y desviación
+
+```{r}
+#| label: Estimación MCO (mgd1)
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo3b <- lm(y ~ x1 + x2, data = simulacion1a) #estimación
+summary(modelo3b) #x1 subestimado y x2 sobreestimado
+```
+
+### 3.c) FIVs manuales
+
+```{r}
+#| label: FIVs (mgd1)
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo_aux_x1 <- lm(x1 ~ x2, data = simulacion1a)
+R2_1 <- summary(modelo_aux_x1)$r.squared
+FIV1 <- 1 / (1 - R2_1)
+print(FIV1)
+
+modelo_aux_x2 <- lm(x2 ~ x1, data = simulacion1a)
+R2_2 <- summary(modelo_aux_x2)$r.squared
+FIV2 <- 1 / (1 - R2_2)
+print(FIV2)
+```
+
+El valor bajo y cerca de $1$ no nos sorprende. En el MGD(1), $x_1$ y $x_2$ se generaron de forma i.i.d. (independiente e idénticamente distribuidas) y uniforme, por lo que se espera que la correlación entre ellas sea cercana a cero
+
+Controlamos con el paquete `car` si lo hemos calculado bien
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+library(car)
+vif(modelo3b)
+```
+
+### 3.d) Muestra simulada 2
+
+```{r}
+#| label: Creación de los parámeteros (mgd2)
+#| message: false
+#| warning: false
+#| paged-print: false
+beta0 <- 2
+beta1 <- 0.5
+beta2 <- 0.25
+sigma_v <- 7 # Raíz de la varianza (49)
+set.seed(1010)
+
+x1 <- runif(n, min = 0, max = 100) 
+v <- rnorm(n, mean = 0, sd = sigma_v)
+x2 <- 2 * x1 + v 
+
+u <- rnorm(n, mean = 0, sd = sigma_u)
+y <- beta0 + beta1 * x1 + beta2 * x2 + u
+
+simulacion1b <- data.frame(y, x1, x2)
+```
+
+```{r}
+#| label: Estimación MCO (mgd2)
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo3d <- lm(y ~ x1 + x2, data = simulacion1b)
+summary(modelo3d)
+```
+
+```{r}
+#| label: FIVs (mgd2)
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo_aux_x1 <- lm(x1 ~ x2, data = simulacion1b)
+R2_1 <- summary(modelo_aux_x1)$r.squared
+FIV1 <- 1 / (1 - R2_1)
+print(FIV1)
+
+modelo_aux_x2 <- lm(x2 ~ x1, data = simulacion1b)
+R2_2 <- summary(modelo_aux_x2)$r.squared
+FIV2 <- 1 / (1 - R2_2)
+print(FIV2)
+```
+
+Los FIVs son muy altos debidos a los $R^2$ muy altos. Hay colinearidad
+
+### 3.e) Muestra simulada 3
+
+```{r}
+#| label: Creación de los parámeteros (mgd2, n=4000)
+#| message: false
+#| warning: false
+#| paged-print: false
+n <- 4000
+set.seed(1010)
+
+x1 <- runif(n, min = 0, max = 100) 
+v <- rnorm(n, mean = 0, sd = sigma_v)
+x2 <- 2 * x1 + v 
+
+u <- rnorm(n, mean = 0, sd = sigma_u)
+y <- beta0 + beta1 * x1 + beta2 * x2 + u
+
+simulacion1c <- data.frame(y, x1, x2)
+```
+
+```{r}
+#| label: Estimación MCO (mgd2, n=4000)
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo3e <- lm(y ~ x1 + x2, data = simulacion1c)
+summary(modelo3e)
+```
+
+```{r}
+#| label: FIVs (mgd2, n=4000)
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo_aux_x1 <- lm(x1 ~ x2, data = simulacion1c)
+R2_1 <- summary(modelo_aux_x1)$r.squared
+FIV1 <- 1 / (1 - R2_1)
+print(FIV1)
+
+modelo_aux_x2 <- lm(x2 ~ x1, data = simulacion1c)
+R2_2 <- summary(modelo_aux_x2)$r.squared
+FIV2 <- 1 / (1 - R2_2)
+print(FIV2)
+```
+
+Los FIVs son muy altos debidos a los $R^2$ muy altos. Hay colinearidad pero los estimadores son más cercanos a los verdaderos porqué ahora son consistentes debido a un $N$ muy alto
+
+## Ejercicio 4
+
+### 4.a) Número de parámetros obtenidos
+
+El resultado debe ser $10,000$ estimaciones para cada parámetro.
+
+### 4.b) Muestra simulada MC 1
+
+```{r}
+#| label: Creación parámetros (mgd1, montecarlo=10000)
+#| message: false
+#| warning: false
+#| paged-print: false
+set.seed(1010)
+reps <- 10000
+n <- 40
+beta0 <- 2
+beta1 <- 1.5
+beta2 <- 2.0
+sigma_u <- 3
+```
+
+```{r}
+#| label: Matriz resultados (mgd1, montecarlo=10000)
+#| message: false
+#| warning: false
+#| paged-print: false
+montecarlo1 <- matrix(NA, nrow = reps, ncol = 3, 
+                      dimnames = list(NULL, c("b0", "b1", "b2")))
+
+x1 <- runif(n, min = 0, max = 100) # x1 ~ U(0, 100)
+x2 <- runif(n, min = 0, max = 100) # x2 ~ U(0, 100)
+
+for (r in 1:reps) {
+  u <- rnorm(n, mean = 0, sd = sigma_u) 
+  y <- beta0 + beta1 * x1 + beta2 * x2 + u
+  
+  simulacion4b <- data.frame(y, x1, x2) #base de datos con y
+  modelo4b <- lm(y ~ x1 + x2, data = simulacion4b) #modelo
+  
+  montecarlo1[r, ] <- coef(modelo4b) #guardamos los coeficientes en la matriz
+}
+
+head(montecarlo1)
+```
+
+```{r}
+#| label: Coeficientes MCO (mgd1, montecarlo=10000)
+#| message: false
+#| warning: false
+#| paged-print: false
+media_mc <- colMeans(montecarlo1) #calculamos el promedio de los coeficientes obtenidos
+sd_mc <- apply(montecarlo1, 2, sd) #calculamos la desviación estándard de los coeficientes obtenidos
+print(media_mc) #parámetros finales
+print(sd_mc) #desviación estándards finales
+```
+
+### 4.c) Histograma de densidad
+
+```{r}
+estimaciones_b1 <- montecarlo1[, "b1"] #guardamos los beta1 estimados
+
+# Convertimos las estimaciones de b1 en un data frame para ggplot2
+b1_mc <- data.frame(b1_hat = estimaciones_b1)
+```
+
+Gráfico sencillo
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+hist(estimaciones_b1, 
+     breaks = 50, 
+     freq = FALSE, # Queremos la densidad en el eje vertical
+     main = "Distribución Muestral de b1",
+     xlab = "Valor Estimado de b1")
+```
+
+Grafico complejo con `ggplot2`
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| paged-print: false
+library(ggplot2) # paquete para realizar gráficos más complejos
+
+# Creamos el histograma de densidad
+
+histograma_b1 <- ggplot(b1_mc, aes(x = b1_hat)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 50, fill = "lightblue", color = "black") +
+  geom_density(color = "red", linewidth = 1) + 
+  geom_vline(xintercept = beta1, linetype = "dashed", color = "blue", linewidth = 1) + # Línea vertical en el valor real
+  labs(
+    title = expression(paste("Distribución Muestral de ", hat(beta)[1], " (R = ", 10000, ")")),
+    x = expression(hat(beta)[1]),
+    y = "Densidad"
+  ) +
+  theme_minimal()
+
+print(histograma_b1)
+```
+
+### 3.d) Muestra simulada MC 2
+
+```{r}
+#| label: Creación parámetros (mgd2, montecarlo=10000)
+#| message: false
+#| warning: false
+#| paged-print: false
+set.seed(1010)
+reps <- 10000
+n <- 40
+beta0 <- 2
+beta1 <- 0.5
+beta2 <- 0.25
+sigma_v <- 7 # Raíz de la varianza (49)
+```
+
+```{r}
+#| label: Matriz resultados (mgd2, montecarlo=10000)
+#| message: false
+#| warning: false
+#| paged-print: false
+
+montecarlo2 <- matrix(NA, nrow = reps, ncol = 3, 
+                      dimnames = list(NULL, c("b0", "b1", "b2")))
+
+x1 <- runif(n, min = 0, max = 100) # x1 ~ U(0, 100)
+v <- rnorm(n, mean = 0, sd = sigma_v)
+x2 <- 2 * x1 + v 
+
+for (r in 1:reps) {
+  u <- rnorm(n, mean = 0, sd = sigma_u) 
+  y <- beta0 + beta1 * x1 + beta2 * x2 + u
+  
+  simulacion4d <- data.frame(y, x1, x2) #base de datos con y
+  modelo4d <- lm(y ~ x1 + x2, data = simulacion4d) #modelo
+  
+  montecarlo2[r, ] <- coef(modelo4d) #guardamos los coeficientes en la matriz
+}
+
+media_mc <- colMeans(montecarlo2) #calculamos el promedio de los coeficientes obtenidos
+sd_mc <- apply(montecarlo2, 2, sd) #calculamos la desviación estándard de los coeficientes obtenidos
+
+print(media_mc) #parámetros finales
+print(sd_mc) #desviación estándards finales
+
+estimaciones_b1 <- montecarlo2[, "b1"] #guardamos los beta1 estimados
+```
+
+Gráfico
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+# Convertimos las estimaciones de b1 en un data frame para ggplot2
+b1_mc <- data.frame(b1_hat = estimaciones_b1)
+
+# Gráfico sencillo
+hist(estimaciones_b1, 
+     breaks = 50, 
+     freq = FALSE, # Queremos la densidad en el eje vertical
+     main = "Distribución Muestral de b1",
+     xlab = "Valor Estimado de b1")
+
+
+```
+
+**Insesgadez**: Ambas distribuciones están centradas en $0.5$. La multicolinearidad NO provoca sesgo.
+
+**Varianza**: El histograma MGD 2 es más disperso y achatado que el MGD 1. Esto demuestra que la alta colinearidad infla la varianza, haciendo las estimaciones menos precisas
+
+## Ejercicio 5
+
+```{r}
+#| label: Importar datos
+#| message: false
+#| warning: false
+#| paged-print: false
+library(readr)
+airfares <- read_csv("airfares.csv")
+
+```
+
+### 5.a) Estimación MCO
+
+```{r}
+#| label: Estimación MCO
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo5a <- lm(fare ~ disthm + concen, data = airfares)
+library(stargazer)
+stargazer(modelo5a, type = "text")
+
+```
+
+### 5.b) Estimación parámetros
+
+```{r}
+#| label: Estimación parámetros
+#| message: false
+#| warning: false
+#| paged-print: false
+Y <- as.matrix(airfares$fare) # Y vector (N x 1)
+X <- as.matrix(cbind(1, airfares$disthm, airfares$concen)) # X matriz: [Intercepta=1, x1, x2] (N x K)
+beta_hat <- solve(t(X) %*% X) %*% t(X) %*% Y # Aplicamos directamente la fórmula: beta_hat = (X'X)^-1 * X'y
+print(beta_hat)
+
+# Parámetros del modelo (n, K)
+n <- nrow(X) # número observaciones       
+K <- ncol(X) # número parámetros (incluyendo intercepta) 
+```
+
+```{r}
+#| label: Cálculo de Residuos, SCR y Varianza del Error
+#| message: false
+#| warning: false
+#| paged-print: false
+Y_hat <- X %*% beta_hat 
+U_hat <- Y - Y_hat
+SCR <- t(U_hat) %*% U_hat # Suma de Cuadrados de los Residuos
+
+```
+
+```{r}
+#| label: Cálculo de $R^2$
+#| message: false
+#| warning: false
+#| paged-print: false
+SCT <- t(Y - mean(Y)) %*% (Y - mean(Y))
+R2 <- 1 - (SCR / SCT)
+print(R2)
+R2_adj <- 1 - (1 - R2) * (n - 1) / (n - K)
+print(R2_adj)
+
+```
+
+```{r}
+#| label: Errores estándar
+#| message: false
+#| warning: false
+#| paged-print: false
+gl_model <- n - K # grados de libertad (gl)
+sigma2_hat <- SCR / gl_model # Estimador insesgado de la varianza del error
+
+# Cálculo de la Matriz de Varianza-Covarianza y Errores Estándar
+Var_beta_hat <- as.numeric(sigma2_hat) * solve(t(X) %*% X) # Var_beta_hat = sigma2_hat * (X'X)^-1
+se_beta_hat <- sqrt(diag(Var_beta_hat))
+print(se_beta_hat)
+
+```
+
+### 5.c) Modelo ajustado ----
+
+$$\begin{align*}
+\widehat{fare} &= 62.688 + 8.635 \cdot disthm + 0.663 \cdot concen \\
+& \quad (8.828) \quad (0.342) \quad \quad \quad \quad (0.106) \\
+n &= 1149 \\
+R^2 &= 0.380
+\end{align*}$$
+
+$\hat{Y}$ representa el vector con los valores ajustados
+
+### 5.d) Comentario de los resultados
+
+Signos:
+
+-   $\beta_1$ (`disthm`): El coeficiente es positivo ($+8.635$). Era esperable, ya que a mayor distancia, mayor precio del billete (ceteris paribus).
+
+-   $\beta_2$ (`concen`): El coeficiente es positivo ($+0.663$). También era esperable; a mayor concentración (menos competencia), mayor precio del billete (ceteris paribus).
+
+Bondad del ajuste: El $R\^2$ es $0.380$ ($38\%$). Esto significa que la distancia y la concentración explican el $38\%$ de la variabilidad en las tarifas. Un $38\%$ es un ajuste moderado pero razonable. Indica que hay otros factores importantes ($62\%$) que afectan al precio y no están en el modelo.
+
+### 5.e) Interpretación $\beta_1$
+
+Manteniendo constante el nivel de concentración del mercado (`concen`), un aumento de una unidad en `disthm` (es decir, un aumento de $100$ millas en la distancia del vuelo) está asociado con un aumento medio de $8.635$ dólares en el precio del billete.
+
+### 5.f) Estimación MCO 2
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#Estimación 
+modelo5e <- lm(fare ~ disthm, data = airfares)
+
+# Comparación
+stargazer(modelo5a, modelo5e, type = "text",
+          column.labels = c("Modelo (1)", "Modelo (2)"),
+          keep.stat = c("n", "rsq", "adj.rsq"))
+```
+
+**i. Comparación R\^2**
+
+Por definición matemática, al añadir una variable a un modelo (pasar de Modelo(2) a Modelo(1)), la Suma de Cuadrados de los Residuos ($SCR$) solo puede disminuir o quedarse igual, nunca aumentar Dado que $R^2 = 1 - (SCR / SCT)$ y la Suma de Cuadrados Totales ($SCT$) es idéntica para ambos modelos, el modelo con la $SCR$ más baja (Modelo(1)) tendrá necesariamente el $R^2$ más alto
+
+**ii. Comparación** $\bar{R}^2$
+
+En el Modelo(1), el valor obtenido fue: $\bar{R}^2 = 0.379$ En el Modelo(2), el valor obtenido es más bajo y igual a $R^2$ porqué es una regresión simple.
+
+**iii. Elección del Modelo**
+
+El $\bar{R}^2$ del Modelo (1) ($0.379$) es superior al $\bar{R}^2$ del Modelo(2) ($0.354$). Esto indica que la variable `concen` es relevante y aporta suficiente poder explicativo como para justificar su inclusión.
+
+Comprobamos si el Modelo (2) sufre de Variable omitida utilizando la formula del modelo auxiliar y el $FIV$
+
+Regresión auxiliar para comprobar la correlación y el signo del sesgo:
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo_auxiliar <- lm(concen ~ disthm, data = airfares)
+summary(modelo_auxiliar)
+```
+
+Para analizar el sesgo el Modelo(2), necesitamos dos informaciones: Del Modelo(1) sabemos que $\beta_2$ (coeficiente de `concen`) es POSITIVO En el modelo auxiliar vemos que el coeficiente de `disthm` es NEGATIVO $$Sesgo = (Positivo) * (Negativo) = NEGATIVO$$
+
+El estimador de `disthm` en el Modelo(2) sufre de un sesgo negativo

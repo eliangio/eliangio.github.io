@@ -1,0 +1,912 @@
+---
+title: "Ejercicios5"
+author: "Elian Giordano"
+format: html
+editor: visual
+execute:
+  eval: false
+---
+
+# Ejercicios #5
+
+## Ejercicio 1
+
+El modelo No Restringido (NR) será: $$ y_i = \beta_0 + \beta_1 x_{i1} + ... + \beta_K x_{iK} + u_i $$
+
+Los grados de libertad del denominador son: $gl_{den} = n - (K + 1)$.
+
+El modelo Restringido (R), bajo $H_0$, es: $$ y_i = \beta_0 + u_i $$
+
+En este caso, la estimación MCO de $\beta_0$ es $\bar{y}$ (la media de y).
+
+La Suma de Cuadrados de los Residuos del modelo restringido ($SRC_R$) es: $$ SRC_R = \sum (y_i - \bar{y})^2 $$ Por definición, la suma de cuadrados de las desviaciones de 'y' respecto a su media es la Suma de Cuadrados Totales (SCT). Por tanto: $$ SRC_R = SCT $$
+
+El número de restricciones ($q$) es igual al número de coeficientes que se igualan a cero en $H_0$, que son todas las pendientes: $$ q = K $$
+
+Sustituimos $SRC_R = SCT$ y $q = K$ en la fórmula general del estadístico F: $$ F = \frac{(SCT - SRC) / K}{SRC / (n - (K + 1))} \quad \text{(Expresión 1)} $$
+
+El coeficiente de determinación ($R^2$) se puede escribir como: $$ R^2 = 1 - \frac{SRC}{SCT} = \frac{SCT - SRC}{SCT} $$
+
+Despejamos $SRC$: $$ SRC = SCT - (R^2 \cdot SCT) = SCT \cdot (1 - R^2) $$
+
+Sustituimos las relaciones en la primera ecuación: $$ F = \frac{(R^2 \cdot SCT) / K}{(SCT \cdot (1 - R^2)) / (n - (K + 1))} $$
+
+Cancelamos SCT del numerador y del denominador: $$ F = \frac{R^2 / K}{(1 - R^2) / (n - (K + 1))} $$
+
+## Ejercicio 2
+
+### 2.a) Generación muestra
+
+```{r}
+# Parámetros
+set.seed(1234) 
+
+# Generación variables
+x1 <- runif(20, min = 0, max = 50)
+v  <- rnorm(20, mean = 0, sd = 1)
+x2 <- x1 + v # variable colineal
+x3 <- runif(20, min = 0, max = 50)
+u <- rnorm(20, mean = 0, sd = 8)
+y <- 2 + 0.5 * x1 + 0.5 * x2 + 1 * x3 + u
+```
+
+### 2.b) Estimación del Modelo
+
+```{r}
+modelo2b <- lm(y ~ x1 + x2 + x3)
+summary(modelo2b)
+```
+
+### 2.c) Cálculo de FIVs (VIF)
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+# FIVs manuales
+
+# 1. FIV_1
+aux_x1 <- lm(x1 ~ x2 + x3)
+R2_x1 <- summary(aux_x1)$r.squared
+FIV_1 <- 1 / (1 - R2_x1)
+
+# 2. FIV_2
+aux_x2 <- lm(x2 ~ x1 + x3)
+R2_x2 <- summary(aux_x2)$r.squared
+FIV_2 <- 1 / (1 - R2_x2)
+
+# 3. FIV_3
+aux_x3 <- lm(x3 ~ x1 + x2)
+R2_x3 <- summary(aux_x3)$r.squared
+FIV_3 <- 1 / (1 - R2_x3)
+
+print(c(FIV_1 = FIV_1, FIV_2 = FIV_2, FIV_3 = FIV_3))
+
+# FIVs automáticos
+library(car)
+vif(modelo2b)
+```
+
+### 2.d) Intervalos de Confianza
+
+```{r}
+# IC manuales
+coef <- as.numeric(modelo2b$coefficients)
+t_crit <- qt(1 - 0.025, df = df.residual(modelo2b))
+es <- as.numeric(summary(modelo2b)$coefficients[, "Std. Error"])
+
+IC_inf <- coef - t_crit * es
+IC_sup <- coef + t_crit * es
+
+IC_manual <- cbind(IC_inf, IC_sup) 
+print(IC_manual)
+
+# IC automáticos
+confint(modelo2b, level = 0.95)
+```
+
+### 2.e) Significación Estadística
+
+```{r}
+# Manual
+t_estadistico_manual <- (coef - 0) / es
+p_value_manual <- 2 * (1 - pt(abs(t_estadistico_manual), df = df.residual(modelo2b)))
+sig_manual <- cbind(t_estadistico_manual, p_value_manual)
+print(sig_manual)
+
+# Automatizado
+summary(modelo2b)$coefficients[, c("t value", "Pr(>|t|)")]
+```
+
+### 2.f) Test Conjunto ($x_1$ y $x_2$)
+
+Contrastamos si $x_1$ y $x_2$ son conjuntamente significativos.
+
+```{r}
+# Modelo Restringido (solo x3)
+modelo2f <- lm(y ~ x3)
+SRC_R <- sum(resid(modelo2f)^2) 
+SRC_U <- sum(resid(modelo2b)^2) # SCR del modelo completo
+
+# Estadístico F
+F_est <- ((SRC_R - SRC_U) / 2) / (SRC_U / df.residual(modelo2b))
+p_value_f <- 1 - pf(F_est, df1 = 2, df2 = df.residual(modelo2b))
+print(p_value_f)
+
+# Automatizado
+hypothesis <- c("x1 = 0", "x2 = 0")
+test <- linearHypothesis(modelo2b, hypothesis)
+print(test)
+```
+
+### 2.g) Comentario sobre Colinealidad
+
+La fuerte colinealidad introducida entre $x_1$ y $x_2$ (FIV alto) ha impactado negativamente en la inferencia estadística:
+
+-   Inflación de la varianza: Los errores estándar de los coeficientes de $x_1$ y $x_2$ se han inflado significativamente.
+
+-   Intervalos de confianza anchos: La varianza inflada resulta en intervalos muy amplios.
+
+-   Dificultad para rechazar $H_0$ individual: El estadístico t se reduce, dificultando la detección de un efecto real.
+
+-   Paradoja de la colinealidad: El test F conjunto logra rechazar $H_0$, demostrando que el conjunto de variables es importante aunque individualmente no lo parezcan.
+
+### 2.h) Simulación con n=200
+
+```{r}
+# Parámetros
+set.seed(1234) 
+# Generación variables (n=200)
+x1 <- runif(200, min = 0, max = 50)
+v  <- rnorm(200, mean = 0, sd = 1)
+x2 <- x1 + v 
+x3 <- runif(200, min = 0, max = 50)
+u <- rnorm(200, mean = 0, sd = 8)
+y <- 2 + 0.5 * x1 + 0.5 * x2 + 1 * x3 + u
+
+modelo2h <- lm(y ~ x1 + x2 + x3)
+summary(modelo2h)
+
+# FIVs para n=200
+vif(modelo2h)
+
+# Test F conjunto
+modelo2hh <- lm(y ~ x3)
+SRC_R <- sum(resid(modelo2hh)^2) 
+SRC_U <- sum(resid(modelo2h)^2) 
+F_est <- ((SRC_R - SRC_U) / 2) / (SRC_U / df.residual(modelo2h))
+print(F_est)
+```
+
+(i) La colinealidad persiste: Los valores FIV para $x_1$ y $x_2$ siguen siendo extremadamente altos (\~210), similares a los de $n=20$. La colinealidad es estructural.
+
+(ii) Los estimadores han cambiado: Los errores estándar se han reducido considerablemente. Sin embargo, a pesar de aumentar $n$ a 200, los p-values pueden seguir siendo altos si la colinealidad es extrema.
+
+(iii) La expresión clave: $$ Var(\hat{\beta}_j) = \frac{\sigma^2}{SCT_j (1-R^2_j)} = \frac{\sigma^2}{SCT_j} \cdot FIV_j $$ El tamaño de la muestra afecta a la $SCT_j$ (Suma de Cuadrados Totales de x). Cuanto mayor es $n$, mayor es $SCT_j$, lo que ayuda a reducir la varianza y contrarrestar el efecto del FIV alto.
+
+## Ejercicio 3
+
+```{r}
+education <- read.csv("education.csv")
+```
+
+### 3.a) Expectativas
+
+-   $\beta_1$ (sibs): NEGATIVO (-). En familias más grandes, hay menos recursos per cápita.
+
+-   $\beta_2$ (meduc): POSITIVO (+). Madres más educadas valoran más la educación.
+
+-   $\beta_3$ (feduc): POSITIVO (+). Padres más educados proveen mejor entorno académico.
+
+### 3.b) Estimación MCO
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo3b <- lm(educ ~ sibs + meduc + feduc, data = education)
+summary(modelo3b)
+library(stargazer)
+stargazer(modelo3b, type = "text", 
+          dep.var.labels = "educación (en años)", 
+          covariate.labels = c("n. hermanos/as", "educación madre", "educación padre", "Intercept"))
+
+```
+
+### 3.c) Modelo Ajustado
+
+```{r}
+coefs <- coef(modelo3b)
+errores <- summary(modelo3b)$coefficients[, "Std. Error"]
+r2 <- summary(modelo3b)$r.squared
+
+cat(sprintf("educ = %.4f (%.4f) %.4f (%.4f) * sibs + %.4f (%.4f) * meduc + %.4f (%.4f) * feduc\n",
+            coefs[1], errores[1], coefs[2], errores[2], coefs[3], errores[3], coefs[4], errores[4]))
+cat(sprintf("R^2 = %.4f\n", r2))
+```
+
+$$educ = 10.3643 (0.3585) -0.0936 (0.0345) * sibs + 0.1308 (0.0327) * meduc + 0.2100 (0.0275) * feduc$$
+
+### 3.d) T-test para `sibs` ($\alpha=1\%$)
+
+```{r}
+t_b1 <- abs(coefs[2] / errores[2])
+t_crit <- qt(1 - 0.01/2, df = df.residual(modelo3b)) 
+print(t_b1)
+print(t_crit)
+```
+
+Conclusión: Rechazamos $H_0$.
+
+### 3.e) F-test para `sibs`
+
+```{r}
+# F = t^2 para una restricción
+F_b1 <- t_b1^2
+F_crit <- qf(1 - 0.01, df1 = 1, df2 = df.residual(modelo3b))
+print(F_b1)
+print(F_crit)
+```
+
+Conclusión: Rechazamos $H_0$.
+
+### 3.f) P-value analítico (`meduc`)
+
+```{r}
+t_b2 <- abs(coefs[3] / errores[3])
+p_value_b2 <- 2 * (1 - pt(t_b2, df = df.residual(modelo3b)))
+print(p_value_b2)
+```
+
+### 3.g) Gráfico P-value (`feduc`)
+
+```{r}
+t_b3 <- abs(coefs[4] / errores[4])
+lim <- max(4, abs(t_b3) + 1)
+curve(dt(x, df.residual(modelo3b)), -lim, lim, lwd=2, ylab="Densidad", 
+      main=paste("Estadístico t para feduc (t =", round(t_b3, 4), ")"))
+abline(v = c(t_b3, -t_b3), col="blue", lwd=2, lty=2)
+```
+
+### 3.h) Notación Asteriscos
+
+-   \*\*\* $p < 0.001$ (Significativo al 0.1%)
+
+-   \*\* $p < 0.01$ (Significativo al 1%)
+
+-   \* $p < 0.05$ (Significativo al 5%)
+
+### 3.i) IC para `sibs` (95%)
+
+```{r}
+beta1 <- coefs[2]
+t_crit_95 <- qt(1 - 0.025, df.residual(modelo3b))
+es_sibs <- errores[2]
+
+IC_inf <- beta1 - t_crit_95 * es_sibs
+IC_sup <- beta1 + t_crit_95 * es_sibs
+print(c(IC_inf, IC_sup))
+
+# Automático
+confint(modelo3b, level = 0.95)[2,]
+```
+
+### 3.j) Colinealidad
+
+Es probable que haya colinealidad porque las personas tienden a casarse con parejas de nivel educativo similar, lo que genera alta correlación entre `meduc` y `feduc`.
+
+### 3.k) Cálculo de VIFs
+
+```{r}
+vif(modelo3b)
+```
+
+### 3.l) 3.l) Significación Global con SRC
+
+```{r}
+modelo3l <- lm(educ ~ 1, data=education) # Solo constante
+
+SRC_R <- sum(resid(modelo3l)^2) # Es la SCT (Suma Cuadrados Total)
+SRC_U <- sum(resid(modelo3b)^2)
+
+F_global <- ((SRC_R - SRC_U) / 3) / (SRC_U / df.residual(modelo3b))
+p_value_global <- 1 - pf(F_global, df1=3, df2=df.residual(modelo3b))
+print(F_global)
+
+# comprobamos con el summary
+print(summary(modelo3b)$fstatistic)
+```
+
+### 3.m) Significación Global con R
+
+```{r}
+F_global_r2 <- (r2 / 3) / ((1 - r2) / df.residual(modelo3b))
+print(F_global_r2)
+```
+
+### 3.n) beta2 = beta3
+
+Queremos saber si el efecto de la educación de la madre (beta2) es igual a lo del padre (beta3) $$H_0: \beta_2 - \beta_3 = 0$$
+
+Si queremos escribirlo como modelo restringido $$ y = \beta_0 + \beta_1sibs + \beta_2(meduc + feduc) + u$$
+
+### 3.o) beta2 = beta3
+
+Contrastamos si el efecto de la educación de la madre es igual al del padre.
+
+```{r}
+# Variable auxiliar suma
+education$padres_sum <- education$meduc + education$feduc
+# Modelo restringido: educ = b0 + b1*sibs + b2(padres_sum)
+modelo3o <- lm(educ ~ sibs + padres_sum, data=education)
+
+SRC_R_padres <- sum(resid(modelo3o)^2)
+F_padres <- ((SRC_R_padres - SRC_U) / 1) / (SRC_U / df.residual(modelo3b))
+p_val_padres <- 1 - pf(F_padres, df1=1, df2=df.residual(modelo3b))
+
+print(F_padres)
+print(p_val_padres)
+```
+
+Conclusión: El p-value es alto, no podemos rechazar $H_0$. No hay evidencia de que los efectos sean distintos.
+
+## Ejercicio 4
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+library(readr)
+vote1 <- read.csv("vote1.csv")
+```
+
+### 4.a) Estimación
+
+Expectativas: $\beta_1 > 0$, $\beta_2 < 0$, $\beta_3 > 0$
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+library(stargazer)
+modelo4a<- lm(votA ~ expendA + expendB + prtystrA, data = vote1)
+stargazer(modelo4a, type = "text")
+```
+
+### 4.b) Contrastes individuales
+
+Gasto propio no afecta: $$H_0: \beta_1 = 0$$ Gasto rival no afecta: $$H_0: \beta_2 = 0$$
+
+Si miramos los dos t estimados en `summary(modelo4a)`, ya podemos rechazar las dos H_0
+
+```{r}
+summary(modelo4a)
+```
+
+### 4.c) Contraste t conjunto beta1 y beta2
+
+$$H_0: \beta_1=-\beta_2$$ Con esta hipotesis nula contrastamos si el coefficiente del gasto del candidato A tiene el efecto opuesto al gasto del candidato B
+
+```{r}
+hypothesis <- c("expendA + expendB = 0")
+test <- linearHypothesis (modelo4a, hypothesis)
+print(test)
+
+# De manera manual
+# Error estándar de la suma: sqrt(Var(b1) + Var(b2) + 2*Cov(b1,b2))
+se_suma <- sqrt(vcov(modelo4a)["expendA","expendA"] + 
+                  vcov(modelo4a)["expendB","expendB"] + 
+                  2*vcov(modelo4a)["expendA","expendB"])
+
+t_stat_manual <- (modelo4a$coefficients["expendA"] + modelo4a$coefficients["expendB"]) / se_suma
+p_val_manual <- 2 * (1 - pt(abs(t_stat_manual), df.residual(modelo4a)))
+
+print(t_stat_manual)
+print(p_val_manual)
+```
+
+No podemos rechazar $H_0$. Hay un problema de colinealidad!
+
+### 4.d) Contraste F conjunto beta1 y beta2
+
+```{r}
+SRC_U <- sum(resid(modelo4a)^2)
+# Creamos el modelo restringido: votA = beta0 + beta1(expendA+expendB)+beta2*prtystrA
+expendAB <-  vote1$expendA - vote1$expendB #creación variable combinada
+modelo4d <- lm(votA ~ expendAB + prtystrA, data = vote1)
+SRC_R <- sum(resid(modelo4d)^2)
+
+F_est <- ((SRC_R - SRC_U) / 1) / (SRC_U / df.residual(modelo4a))
+F_crit_d <- qf(1 - 0.05, df1 = 1, df2 = df.residual(modelo4a)) # F crítico
+p_value <- 1 - pf(F_est, df1 = 1, df2 = df.residual(modelo4a))
+print(p_value) # el mismo que con el test t
+```
+
+## Ejercicio 5
+
+```{r}
+#| message: false
+#| warning: false
+#| include: false
+#| paged-print: false
+rm(list = ls()) # limpiamos
+corruption <- read_csv("corruption.csv")
+
+View(corruption) # visualizamos los datos antes de empezar
+# CUIDADO: el archivo es un poquito diferente de lo que pregunta el ejercicio:
+# - hay más de 35 paises
+# - la variable socialmediashare se llama social_networks_share
+# - la variable gdppc es la que se llama lgdp (en logaritmos)
+
+library(dplyr)
+corruption <- rename(corruption, socialmediashare = social_networks_share, gdppc = lgdp) #cambiamos el nombre a las variables
+corruption <- subset(corruption, select = c(country, corruption, socialmediashare, gdppc)) #mantenemos sólo las variables que nos interesan
+colSums(is.na(corruption)) #faltan observaciones en alguna variable?
+corruption <- na.omit(corruption) #qutamos las observaciones que faltan
+nrow(corruption )# ahora tenemos 35 paises!
+```
+
+### 5.a) Interpretación $\beta_1$
+
+Mide el efecto marginal de la penetración de redes sociales sobre la corrupción, ceteris paribus (manteniendo constante la renta per cápita).
+
+### 5.b) Estimación
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo5b <- lm(corruption ~ socialmediashare + gdppc, data = corruption)
+library(stargazer)
+stargazer(modelo5b, type = "text")
+```
+
+El modelo explica el 74.8% de la variabilidad de la corrupción
+
+$\beta_0$: si un país tuviera 0 penetración de redes sociales y 0 renta per cápita, su índice de corrupción predicho sería de 100.6 puntos.
+
+$\beta_1$: manteniendo constante la renta per cápita, un aumento de 1 punto en la penetración de redes sociales está asociado a una disminución media de 0.0015 puntos en el índice de corrupción
+
+$\beta_2$: manteniendo constante la penetración de redes sociales, un aumento de 1 unidad en la variable de riqueza está asociado a una disminución media de 0.3803 puntos en el índice de corrupción
+
+### 5.c) Correlación
+
+Expectativa teórica
+
+Es razonable esperar que los países con mayor renta per cápita (más ricos) tengan mejores infraestructuras de telecomunicaciones, mayor acceso a tecnología (smartphones, ordenadores), y mayor alfabetización digital, lo que facilita una mayor penetración de las redes sociales
+
+```{r}
+corrb1b2 <- cor(corruption$socialmediashare, corruption$gdppc)
+print(corrb1b2)
+```
+
+Conclusión: la correlación es positiva y muy alta
+
+### 5.d) Omitir $\beta_2$
+
+Sabemos que la riqueza (`gdppc`) reduce la corrupción (coeficiente negativo: -0.38) Hemos establecido en 5.c que la riqueza está correlacionada positivamente con las redes sociales. Por lo tanto, esperamos un sesgo de variable omitida negativo
+
+Si omitimos gdppc, el coeficiente de socialmediashare sufriría un sesgo negativo volviendose más negativo (en valor absoluto) de lo que realmente es. Comprobamolo:
+
+```{r}
+modelo5d <- lm(corruption ~ socialmediashare, data = corruption)
+summary(modelo5d)
+```
+
+Podemos confirmar nuestro asunto sobre la variable omitida
+
+## Ejercicio 6
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+rm(list = ls()) # limpiamos
+library(readr)
+airfares <- read.csv("airfares.csv")
+```
+
+### 6.a) Estimación
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo6a <- lm(log(fare) ~ log(disthm) + concen, data = airfares)
+summary(modelo6a)
+library(stargazer)
+stargazer(modelo6a, type = "text", dep.var.labels = "Precio vuelos", 
+          covariate.labels = c("Distancia en 100 millas (log)", "Cuota de mercado (log)", "Intercepta"))
+
+```
+
+### 6.b) Interpretación $\beta_1$
+
+Al ser un modelo log-log, $\beta_1$ representa la elasticidad precio-distancia. Si la distancia aumenta un $1\%$, se estima que el precio del billete aumentará, en promedio, un $0.4\%$, manteniendo constante la concentración de mercado
+
+### 6.c) Contraste $\beta_1=0.5$
+
+```{r}
+library(car)
+# t = (beta1 - 0.5) / se(beta1)
+hypothesis <- c("log(disthm) = 0.5")
+test <- linearHypothesis(modelo6a, hypothesis)
+print(test)
+# Nota: linearHypothesis usa el estadístico F. Recuerda que F = t^2 para 1 restricción
+
+# manual
+t_est <- (summary(modelo6a)$coefficients["log(disthm)","Estimate"] - 0.5) / summary(modelo6a)$coefficients["log(disthm)", "Std. Error"]
+print(t_est)
+t_crit <- qt(1 - 0.5/2, df = df.residual(modelo6a))
+print(t_crit)
+```
+
+Rechazamos $H_0$
+
+### 6.d) Explicación $H_0: \beta_1=0.5$
+
+$H_0: \beta_1=0.5$ contrasta si la elasticidad precio-distancia es exactamente $0.5$ Es decir, si ante un aumento del $1\%$ en la distancia, el precio sube exactamente un $0.5\%$
+
+### 6.e) IC beta1
+
+```{r}
+coef <- as.numeric(modelo6a$coefficients[2])
+t_crit <- qt(1 - 0.025, df = df.residual(modelo6a))
+es <- as.numeric(summary(modelo6a)$coefficients[2, "Std. Error"])
+
+```
+
+$$CI=0.408621752 \pm 1.962036 * 0.01776081$$
+
+```{r}
+IC_inf <- coef - t_crit * es
+IC_sup <- coef + t_crit * es
+
+IC_manual <- cbind(IC_inf, IC_sup) 
+print(IC_manual)
+
+# IC automáticos
+IC_95 <- confint(modelo6a, level = 0.95)
+print(IC_95)
+```
+
+Dado los valores del límite inferior y superior, podemos decir, con una confianza del $95\%$, que si la distancia augmenta en un $1\%$ el precio aumentará entre un $0.373774407$ y un $0.443469097$
+
+### 6.f) Explicación IC 95
+
+Significa que si tomáramos muchas muestras aleatorias diferentes de vuelos y construyéramos un intervalo de confianza para cada una el $95\%$ de esos intervalos contendrían el verdadero valor poblacional del parámetro $\beta_1$
+
+### 6.g) Contraste $t$: $\beta_1=0$
+
+Podemos mirar a la $t$ sacada por el summary
+
+```{r}
+summary(modelo6a)$coefficients["log(disthm)", "t value"]
+
+```
+
+Calculado manualmente como $\hat{\beta}_1 / se(\hat{\beta}_1)$
+
+```{r}
+t_est <- (summary(modelo6a)$coefficients["log(disthm)","Estimate"] - 0) / summary(modelo6a)$coefficients["log(disthm)", "Std. Error"]
+print(t_est)
+
+t_crit <- qt(1 - 0.5/2, df = df.residual(modelo6a))
+print(t_crit)
+```
+
+$$|t_{est}| > |t_{crit}| $$ Rechazamos $H_0$
+
+```{r}
+p_val_manual <- 2 * (1 - pt(abs(t_est), df.residual(modelo6a)))
+print(p_val_manual)
+```
+
+### 6.h) Contraste $F$ $\beta_1=0$
+
+```{r}
+SRC_U <- sum(resid(modelo6a)^2)
+
+# Creamos el modelo restringido: log(fare) = concen
+modelo6h <- lm(log(fare) ~ concen, data = airfares)
+SRC_R <- sum(resid(modelo6h)^2)
+
+F_est <- ((SRC_R - SRC_U) / 1) / (SRC_U / df.residual(modelo6a)) # exactamente t^2
+F_crit_d <- qf(1 - 0.05, df1 = 1, df2 = df.residual(modelo6a)) # F crítico
+p_value <- 1 - pf(F_est, df1 = 1, df2 = df.residual(modelo6a))
+print(p_value) # el mismo que con el test t
+
+```
+
+### 6.i) Distancia en cientos de millas
+
+```{r}
+modelo6i <- lm(log(fare) ~ log(disthm*100) + concen, data = airfares)
+summary(modelo6i)
+
+```
+
+Matematicamente, podemos dividir este logaritmo como ln(100) + ln(disthm) adonde el primer término se convierte ser una constante. Esta constante se suma a la constante De hecho, la intercepta será lo único que cambia con respeto al primer modelo.
+
+## Ejercicio 7
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+rm(list = ls()) # limpiamos
+library(readr)
+hprice2 <- read.csv("hprice2.csv")
+```
+
+### 6.a) Estimación
+
+```{r}
+modelo7a <- lm(log(price) ~ rooms + log(nox) + log(dist) + stratio + crime, data = hprice2)
+summary(modelo7a)
+```
+
+### 7.b) Contraste expectativas
+
+-   $\beta_1$: positivo Más habitaciones implican una casa más grande, aumentando el precio
+
+-   $\beta_2$: negativo Más contaminación hace la zona menos deseable, bajando el precio
+
+-   $\beta_3$: negativo Estar lejos del centro reduce el valor. A veces puede ser positivo si estar lejos implica estar en suburbios limpios y tranquilos
+
+-   $\beta_4$: negativo Un ratio alto indica clases masificadas (= peor calidad escolar), reduciendo el valor de la zona
+
+-   $\beta_5$: negativo Más crimen hace la zona peligrosa y menos deseable
+
+### 7.c) Significación $1\%$
+
+Todos los estimadores han salido significativos al $1\%$
+
+### 7.d) Interpretación beta1
+
+Manteniendo constantes el resto de características, si una vivienda tiene una habitación más que otra ($\Delta rooms = 1$), se estima que su precio será aproximadamente un $24.6\%$ mayor
+
+### 7.e) Interpretación beta2
+
+Manteniendo constantes el resto de variables, si el nivel de contaminación aumenta un $1\%$, se estima que el precio de la vivienda disminuirá un $0.9\%$
+
+### 7.f) Exogeneidad beta2
+
+Bajo el supuesto de Media Condicional Cero (MLR.2): $E(u | nox, rooms, ...) = 0$ Esto exige que la variable $log(nox)$ sea exógena, es decir, que no esté correlacionada con el término de error $u$. Es muy probable que existan variables omitidas en $u$ (como la calidadestética del barrio, ruido, antigüedad de edificios) que estén correlacionadas con la contaminación. Podemos concluir que haya un sesgo de variable omitida
+
+## Ejercicio 8
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+rm(list = ls()) # limpiamos
+library(readr)
+microsoft <- read.csv("microsoft.csv")
+
+```
+
+### 8.a) Definición beta6
+
+$$\beta_6 = \mathbb{E}(RPmsoft | m1=1, X) - \mathbb{E}(RPmsoft | m1=0, X)$$ Donde $X$ representa el resto de variables constantes (Ceteris Paribus) $\beta_6$ capta la diferencia esperada en la prima de riesgo de Microsoft en el mes de Enero ($m1=1$) comparada con el resto de meses del año, manteniendo constantes las condiciones de mercado aproximadas por los indices S&P500 y otras variables macroeconómicas
+
+### 8.b) Definición $\beta_6$
+
+```{r}
+modelo8b <- lm(RPmsoft ~ RPsandp + Dprod + Dinflation + Dterm + m1, data = microsoft)
+summary(modelo8b)
+```
+
+### 8.c) Contraste $t$: $\beta_6=0$
+
+```{r}
+t_beta6 <- coef(modelo8b)["m1"] / coef(summary(modelo8b))["m1", "Std. Error"]
+t_crit <- qt(1 - 0.5/2, df = df.residual(modelo8b))
+print(t_beta6)
+print(t_crit)
+```
+
+$H_0: \beta_6 = 0$ =\> No hay efecto diferencial en enero $H1: \beta_6 \neq 0$ =\> Existe estacionalidad en enero
+
+No rechazamos $H_0$ La variable $m1$ NO es significativa. No hay evidencia suficiente de un efecto diferencial
+
+### 8.d) Valor $p$ de $\beta_6=0$
+
+$$p-value = P(|T| > |t_{est}|) = 2 * (1 - P(T <= |t_{est}|))$$
+
+```{r}
+p_val_manual <- 2 * (1 - pt(abs(t_beta6), df.residual(modelo8b)))
+print(p_val_manual)
+```
+
+Gráfico:
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| paged-print: false
+lim <- max(4, abs(t_beta6) + 1)
+curve(dt(x, df.residual(modelo8b)), -lim, lim, lwd=2, ylab="Densidad", 
+      main=paste("P-valor para m1 (t =", round(t_beta6, 3), ")"))
+abline(v = c(t_beta6, -t_beta6), col="blue", lwd=2, lty=2)
+x_der <- seq(abs(t_beta6), lim, length=100)
+polygon(c(x_der, lim, abs(t_beta6)), c(dt(x_der, df.residual(modelo8b)), 0, 0), col="red", border=NA)
+x_izq <- seq(-lim, -abs(t_beta6), length=100)
+polygon(c(x_izq, -abs(t_beta6), -lim), c(dt(x_izq, df.residual(modelo8b)), 0, 0), col="red", border=NA)
+```
+
+### 8.e) Efecto Enero
+
+El Efecto Enero sostiene que los rendimientos en enero tienden a ser más altos Aunque el signo pueda ser positivo, el efecto no es estadísticamente significativo No hay evidencia estadística suficiente para apoyar el Efecto Enero
+
+## Ejercicio 9
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+library(readr)
+rm(list = ls()) # limpiamos
+cps09 <- read.csv("cps09subset.csv")
+```
+
+### 9.a) Estimación lineal
+
+```{r}
+modelo9a <- lm(log(earnings) ~ ed + ex, data = cps09) # ecuación de Mincer!
+summary(modelo9a)
+```
+
+### 9.b) Interpretación $\Delta \beta_2$
+
+En el Modelo 1, la relación entre el log del salario y la experiencia es lineal Si la experiencia aumenta de $1$ a $2$ años ($\Delta ex = 1$), el salario esperado aumenta aproximadamente $1\%$, manteniendo la educación constante
+
+### 9.c) Variación $\Delta \beta_2$
+
+En este Modelo 1, la variación esperada es exactamente la misma que en el apartado (b) El aumento estimado sigue siendo del $1\%$. El modelo lineal impone que el efecto marginal de la experiencia sea constante independientemente de cuánta experiencia se tenga acumulada
+
+### 9.d) Estimación cuadratica
+
+El término cuadratico sirve para capturar los rendimientos marginales decrecientes En la vida real, el salario suele subir rápido al inicio de la carrera (se aprende mucho) pero luego se estanca o crece más despacio (o incluso baja al final). Una línea recta no capta esto, pero una parábola (función cuadrática)
+
+Esperamos un signo positivo para $\beta_2$ y negativo para $\beta_3$. ¿Porqué? Para tener una forma de 'U invertida' (concava) que sube y luego baja (o se aplana), el coeficiente del la primera derivada ($\beta_2$) tiene que ser positivo mientras el signo de la segunda derivada ($\beta_3$) tiene que ser negativo
+
+### 9.e) Estimación cuadratica
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo9e <- lm(log(earnings) ~ ed + ex + I(ex^2), data = cps09)
+summary(modelo9e)
+library(stargazer)
+stargazer(modelo9a, modelo9e, type = "text")
+```
+
+### 9.f) Interpretación $ex^2$
+
+El signo de $\beta_3$ es negativo, tal como esperábamos Cómo cambian las interpretaciones de las preguntas (b) y (c)? Si la experiencia aumenta de $1$ a $2$ años ($\Delta ex = 1$), el salario esperado aumenta $$0.039*1+2*(-0.001)*1=0.037$$ Si la experiencia aumenta de $31$ a $32$ años ($\Delta ex = 31$), el salario esperado aumenta $$0.039*31+2*(-0.001)*31=1.147$$ \### 9.g) Significación $\beta_3$
+
+```{r}
+t_beta3 <- coef(modelo9e)["I(ex^2)"] / coef(summary(modelo9e))["I(ex^2)", "Std. Error"]
+t_crit <- qt(1 - 0.01/2, df = df.residual(modelo9e)) # con alpha=0.1
+print(t_beta3)
+print(t_crit)
+```
+
+El regresor $ex^2$ es significativo al $1\%$, confirmando la no linealidad
+
+## Ejercicio 10
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+rm(list = ls()) # limpiamos
+library(readr)
+coffee2m <- read.csv("coffee2m.csv")
+```
+
+### 10.a) Modelo con/sin publicidad
+
+Modelo completo $$ln(Sales) = \beta_0 + \beta_1 * ln(price) + \beta_2 * ad + \beta_3(ad * log(price))$$
+
+Modelo con publicidad $$\mathbb{E}[sales|ad=1]= (\beta_0 + \beta_2) + (\beta_2 + \beta4) * log(price)$$
+
+Modelo sin publicidad $$ \mathbb{E} [sales|ad=0]= \beta_0 + \beta_1 * log(price) $$ \### 10.b) Parámetros elasticidad
+
+Aquí miramos al modelo completo Elasticidad cuando hay publicidad $$\mathbb{E}[sales|price, ad=1] = \beta_1 + \beta_3 $$
+
+Elasticidad cuando no hay publicidad $$\mathbb{E}[sales|price, ad=0] = \beta_1$$
+
+Si $|\beta_1 + \beta_3| > |\beta_1|$, la publicidad hace que la demanda sea más elásticay los consumidores se vuelven más sensibles al precio
+
+Si $|\beta_1 + \beta_3| < |\beta_1|$, la publicidad hace que la demanda sea menos elásticay los consumidores se vuelven menos sensibles al precio
+
+### 10.c) Estimación
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+modelo10c <- lm(log(sales) ~ log(price) * ad, data = coffee2m)
+library(stargazer)
+stargazer(modelo10c, type = "text")
+```
+
+Ceteris paribus, las semanas con campaña publicitaria tienen en promedio, un volumen de ventas un $25.6\%$ mayor aproximadamente
+
+Pero el cambio en la elasticidad no es estadísticamente significativo
+
+### 10.d) Contraste F
+
+Tenemos que contrastar ele efecto de la publicidad que afecta dos regresores: $\beta_2$ y $\beta_3$. Entonces nuestra hipotesis será $$H_0: \beta_2=0 \quad \beta_3=0$$
+
+Modelo restringido
+
+```{r}
+modelo10d <- lm(log(sales) ~ log(price), data = coffee2m)
+
+SRC_R <- sum(resid(modelo10d)^2)
+SRC_U <- sum(resid(modelo10c)^2)
+
+F_est <- ((SRC_R - SRC_U) / 1) / (SRC_U / df.residual(modelo10c))
+F_crit_d <- qf(1 - 0.01, df1 = 2, df2 = df.residual(modelo10c)) # F crítico con alpha=0.01
+p_value <- 1 - pf(F_est, df1 = 2, df2 = df.residual(modelo10c))
+print(p_value) 
+```
+
+Contraste $F$ automatizado con `linearHypothesis`
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+library(car)
+
+hipotesis <- c("ad = 0", "log(price):ad = 0")
+test_F_ad <- linearHypothesis(modelo10c, hipotesis)
+print(test_F_ad)
+```
+
+En este caso los comandos automatizados no nos permite establecer $\alpha = 1\%$ Rechazamos $H_0$
+
+### 10.e) Contraste $t$: $\beta_3=0$
+
+```{r}
+t_beta3 <- coef(modelo10c)["log(price):ad"] / coef(summary(modelo10c))["log(price):ad", "Std. Error"]
+t_crit <- qt(1 - 0.01/2, df = df.residual(modelo10c))
+print(t_beta3)
+print(t_crit)
+```
+
+No rechazamos $H_0$
+
+### 10.f) IC beta3 ----
+
+```{r}
+t_crit <- qt(1 - 0.05/2, df = df.residual(modelo10c)) #t con alpha=0.05
+
+ic_inf <- coef(modelo10c)["log(price):ad"] - t_crit * coef(summary(modelo10c))["log(price):ad", "Std. Error"]
+ic_sup <- coef(modelo10c)["log(price):ad"] + t_crit * coef(summary(modelo10c))["log(price):ad", "Std. Error"]
+print(c(ic_inf, ic_sup))
+
+```
+
+Intervalos de confianza automatizado con `confint`
+
+```{r}
+IC_95 <- confint(modelo10c, level = 0.95)
+print(IC_95)
+```
+
+El intervalo de $\beta_3$ pasa por cero, entonces no podemos rechazar $H_0$ ¿Cómo mejorar el experimento para medir $\beta_3$ con más precisión?
+
+-   Aumentar el tamaño de la muestra ($n=16$)
+
+-   Aumentar la variabilidad de los precios (más días, más semanas = más precios observados)
+
+-   Aumentar la submuestra de precios con publicidad (muestra más equilibrada)
+
+-   Incluir variables de control: temperatura, festivos, localización, etc.

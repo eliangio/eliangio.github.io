@@ -1,26 +1,29 @@
 ---
-title: "About"
-css: styles.css
+pagetitle: "About"
+title: ""
+image: files/goya.jpg
+about:
+  template: trestles
+  image-width: 25em
+  image-shape: rounded
+  links:
+    - text: "Painting Source"
+      href: https://en.wikipedia.org/wiki/Saturn_Devouring_His_Son
+      target: _blank
 ---
 
-Last Update: 9 Oct 2025
+Hi! I'm Elian Giordano, a soon-to-be development economics graduate.
 
-::: {.columns}
+In the last two years, I attended a program called MEDEG, which stands for Master in Economic Development and Growth jointly offered by the [Universidad Carlos III de Madrid](https://www.uc3m.es/master/medeg#home), Spain, and [Lund University](https://www.lusem.lu.se/study/masters-programmes/economic-development-and-growth-masters-programme), Sweden.
 
-::: {.column width="50%"}
-![](goya.jpg){width="90%"}
-:::
+Currently, I am working as an adjunct lecturer at the Universidad Autónoma de Barcelona, Spain, where I teach Microeconomics and Econometrics I. At the same time I am supporting the project [Digiwell](https://sites.google.com/view/progettodigiwell/home-page?authuser=0) led by Prof. Marinella Leone (Università di Pavia). Furthermore, I am part of the [data replicator team](https://jpe-reproducibility.github.io/replicator-team/) led by Florian Oswald at the Journal of Political Economy.
 
-::: {.column width="50%" .v-top}
-
-Hi! I'm Elian Giordano, a soon-to-be development economics graduate.  
-In the last two years, I attended a program called MEDEG, which stands for Master in Economic Development and Growth joinly offered by the [Universidad Carlos III de Madrid](https://www.uc3m.es/master/medeg#home), Spain, and [Lund University](https://www.lusem.lu.se/study/masters-programmes/economic-development-and-growth-masters-programme), Sweden.  
-Currently, I am working as an adjunct lecturer at the Universidad Autónoma de Barcelona, Spain, where I teach *Microeconomía* and *Econometría I*.  
-Furthermore, I am part of the data replicator team led by Florian Oswald at the *Journal of Political Economy*.  
 I am also a proud alumnus of [IPLE](https://www.unimi.it/en/education/bachelor/international-politics-law-and-economics-iple), a bachelor's programme at the Università degli Studi di Milano, Italy.
 
-Apart from the academic fuss, I enjoy my time eating and texting with my friends. A glass of wine may be a good excuse to meet and talk about politics.  
-Don't take this website too seriously. For those who know me, I can be labelled as a stubborn and perfectionist person (or procrastinator, depending on the point of view). Bad combination.  
-I still haven't said the buzzword of my conversations, that is the place where I come from: [Minori](https://en.wikipedia.org/wiki/Minori,_Campania), Italy. It might be that you passed by while visiting the infamous Amalfi and Positano. It's usually the case.    
+Apart from the academic fuss, I enjoy my time eating and texting with my friends. A glass of wine may be a good excuse to meet and talk about politics.
+
+Don't take this website too seriously. For those who know me, I can be labelled as a stubborn and perfectionist person (or procrastinator, depending on the point of view). Bad combination.
+
+I still haven't said the buzzword of my conversations, that is the place where I come from: [Minori](https://en.wikipedia.org/wiki/Minori,_Campania), Italy. It might be that you passed by while visiting the infamous Amalfi and Positano. It's usually the case.
 
 I hope this wasn't too long. At least you got a good overview before putting yourself in trouble by contacting me.
