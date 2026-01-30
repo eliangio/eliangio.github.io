@@ -3,7 +3,7 @@ title: "Elian Giordano"
 css: styles.css
 ---
 
-Last Update: 9 Oct 2025
+Last Update: 29 Jan 2026
 
 ::: {.columns}
 
@@ -14,8 +14,17 @@ Last Update: 9 Oct 2025
 ::: {.column width="60%" .v-top}
 
 ### Current Positions
-Data Replicator, *Journal of Political Economy*  
-Adjunct Lecturer, *Universidad Autónoma de Barcelona*
+Data Replicator
+Journal of Political Economy
+
+Substitute Professor
+Universitat Autònoma de Barcelona
+
+Research Assistant
+Università degli Studi di Pavia
+
+Research Assistant (incoming)
+Institut d'Economia de Barcelona
 
 ### Research Interests
 Impact Evaluation, Inequality Measurement, Social Mobility

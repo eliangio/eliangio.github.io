@@ -9,6 +9,7 @@ website:
       - href: index.qmd
         text: Home
       - about.qmd
+      - CV.qmd
       - courses.qmd
       - projects.qmd
       - code.qmd
