@@ -112,18 +112,18 @@
     "text": "Welcome to my teaching webpage. You will find here a list of ongoing or past courses with their related materials."
   },
   {
-    "objectID": "courses.html#microeconomía",
-    "href": "courses.html#microeconomía",
+    "objectID": "courses.html#microeconomics",
+    "href": "courses.html#microeconomics",
     "title": "Teaching",
-    "section": "Microeconomía",
-    "text": "Microeconomía\nCode: 102119 | Group: 10 | Degree: ADE i Dret\nView Syllabus\nI teach this course at the UAB Sabadell campus. Below you can find the complete set of exercises with solutions that I prepared for the students.\n\nExercise Sets with Solutions\n\nSet 1: Preferences and Utility\nSet 2: Budget Constraint\nSet 3: Consumer Optimal Choice\nSet 4: Consumer Demand\nSet 5: Technology\nSet 6: Profit Maximization\nSet 7: Cost Minimization and Cost Function\nSet 8: Short-Run and Long-Run Optimization\nSet 9: Market Equilibrium, Efficiency, and Tax Incidence\nSet 10: Monopoly and Efficiency\nSet 11: Monopoly and Price Discrimination\nSet 12: Oligopoly: Cournot and Bertrand\nSet 13: Oligopoly: General Equilibrium"
+    "section": "Microeconomics",
+    "text": "Microeconomics\nCode: 102119 | Group: 10 | Degree: CiF View Syllabus\nI teach this course at the UAB Sabadell campus. Below you can find the complete set of exercises with solutions that I prepared for the students.\n\nExercise Sets with Solutions\n\nSet 1: Preferences and Utility\nSet 2: Budget Constraint\nSet 3: Consumer Optimal Choice\nSet 4: Consumer Demand\nSet 5: Technology\nSet 6: Profit Maximization\nSet 7: Cost Minimization and Cost Function\nSet 8: Short-Run and Long-Run Optimization\nSet 9: Market Equilibrium, Efficiency, and Tax Incidence\nSet 10: Monopoly and Efficiency\nSet 11: Monopoly and Price Discrimination\nSet 12: Oligopoly: Cournot and Bertrand\nSet 13: General Equilibrium"
   },
   {
     "objectID": "courses.html#econometrics-i",
     "href": "courses.html#econometrics-i",
     "title": "Teaching",
     "section": "Econometrics I",
-    "text": "Econometrics I\nCode: 102308 | Group: 60 | Degree: CiF\nView Syllabus\nI took over instruction for the second half of this course. My section covers Topics 4, 5, and 6, focusing on practical implementation using R.\n\nLecture Slides\n\nTopic 4: The multiple regression model: estimation\nTopic 5: Linear regression analysis: inference\nTopic 6: Linear regression analysis: extensions\n\n\n\nR Lab Sessions with Solutions\nThese solutions were generated using Quarto.\n\nExercise Set 4: View Solution 4\nExercise Set 5: View Solution 5"
+    "text": "Econometrics I\nCode: 102308 | Group: 60 | Degree: ADE i Dret\nView Syllabus\nI took over instruction for the second half of this course. My section covers Topics 4, 5, and 6, focusing on practical implementation using R.\n\nLecture Slides\n\nTopic 4: The multiple regression model: estimation\nTopic 5: Linear regression analysis: inference\nTopic 6: Linear regression analysis: extensions\n\n\n\nR Lab Sessions with Solutions\nThese solutions were generated using Quarto.\n\nExercise Set 4: View Solution 4\nExercise Set 5: View Solution 5"
   },
   {
     "objectID": "files/Ejercicios4Quarto.html",
