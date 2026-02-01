@@ -13,8 +13,8 @@ Welcome to my teaching webpage. You will find here a list of ongoing or past cou
 **Email:** 1802745[at]uab.cat
 :::
 
-## Microeconomía
-**Code:** 102119 | **Group:** 10 | **Degree:** ADE i Dret  
+## Microeconomics
+**Code:** 102119 | **Group:** 10 | **Degree:** CiF
 [View Syllabus](https://drive.google.com/file/d/1T7yLUzIYT42k2qDVuKUtxrMvkdbcfzbC/view?usp=sharing){target="_blank"}
 
 I teach this course at the UAB Sabadell campus. Below you can find the complete set of exercises with solutions that I prepared for the students.
@@ -32,12 +32,12 @@ I teach this course at the UAB Sabadell campus. Below you can find the complete 
 * [Set 10: Monopoly and Efficiency](https://drive.google.com/file/d/1vxDginb1ur4DX0Bk30iW1uXQjSKittp7/view?usp=sharing)
 * [Set 11: Monopoly and Price Discrimination](https://drive.google.com/file/d/1QMU--_dM3yX3ci6wWCHVxKg2FHKxGDQ_/view?usp=sharing)
 * [Set 12: Oligopoly: Cournot and Bertrand](https://drive.google.com/file/d/1CdIVAUJiemmAuo3z1cyVMGvMpCRpbJ-e/view?usp=sharing)
-* [Set 13: Oligopoly: General Equilibrium](https://drive.google.com/file/d/1EGXi2jfeCE1qSYzBxbArw6Fqi5KNInES/view?usp=sharing)
+* [Set 13: General Equilibrium](https://drive.google.com/file/d/1EGXi2jfeCE1qSYzBxbArw6Fqi5KNInES/view?usp=sharing)
 
 ---
 
 ## Econometrics I
-**Code:** 102308 | **Group:** 60 | **Degree:** CiF    
+**Code:** 102308 | **Group:** 60 | **Degree:** ADE i Dret     
 [View Syllabus](https://drive.google.com/file/d/122MEwX_N39QVv_OWsYeKTC6iRvcUKuq7/view?usp=sharing){target="_blank"}
 
 I took over instruction for the second half of this course. My section covers Topics 4, 5, and 6, focusing on practical implementation using R.

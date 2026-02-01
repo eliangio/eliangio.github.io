@@ -7,8 +7,8 @@ about:
   image-width: 25em
   image-shape: rounded
   links:
-    - text: "Painting Source"
-      href: https://en.wikipedia.org/wiki/Saturn_Devouring_His_Son
+    - text: "Source"
+      href: https://en.wikipedia.org/wiki/The_Sleep_of_Reason_Produces_Monsters
       target: _blank
 ---
 
